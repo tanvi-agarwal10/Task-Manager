@@ -8,20 +8,28 @@ function AddTaskModal({ onClose, refresh }) {
   const handleSubmit = async () => {
     if (!title) return alert("Title required");
 
-    await API.post("/tasks", {
-      title,
-      description,
-      status: "pending",
-    });
+    try {
+      await API.post("/tasks", {
+        title,
+        description,
+        status: "pending",
+      });
 
-    refresh();
-    onClose();
+      if (refresh) await refresh();
+      // clear fields (optional) then close
+      setTitle("");
+      setDescription("");
+      onClose();
+    } catch (err) {
+      console.error("Failed to add task", err);
+      alert("Failed to add task. Check the console for details.");
+    }
   };
 
   return (
     <div style={overlay}>
-      <div style={modal}>
-        <h2>Add Task</h2>
+        <div style={modal}>
+          <h2 style={{ margin: 0 }}>Add Task</h2>
 
         <input
           placeholder="Title"
@@ -37,8 +45,10 @@ function AddTaskModal({ onClose, refresh }) {
           style={input}
         />
 
-        <button onClick={handleSubmit}>Add</button>
-        <button onClick={onClose}>Cancel</button>
+        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          <button onClick={handleSubmit} style={primaryButton}>Add</button>
+          <button onClick={onClose} style={secondaryButton}>Cancel</button>
+        </div>
       </div>
     </div>
   );
@@ -53,9 +63,28 @@ const overlay={
 };
 
 const modal={
-  background:"white",padding:20,borderRadius:8,width:300
+  background:"white",padding:20,borderRadius:8,width:300,
+  color: "#000"
 };
 
 const input={
-  width:"100%",padding:8,margin:"10px 0"
+  width:"100%",padding:8,margin:"10px 0",color:"#000",borderRadius:4,border:"1px solid #ddd"
+};
+
+const primaryButton={
+  background: "#646cff",
+  color: "#fff",
+  border: "none",
+  padding: "8px 12px",
+  borderRadius: 6,
+  cursor: "pointer"
+};
+
+const secondaryButton={
+  background: "#f0f0f0",
+  color: "#000",
+  border: "none",
+  padding: "8px 12px",
+  borderRadius: 6,
+  cursor: "pointer"
 };
