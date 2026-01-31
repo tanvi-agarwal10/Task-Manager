@@ -1,28 +1,36 @@
 import { useEffect, useState } from "react";
 import API from "./services/api";
+import AddTaskModal from "./components/AddTaskModal";
 
 function App() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks,setTasks]=useState([]);
+  const [showModal,setShowModal]=useState(false);
 
-  const fetchTasks = async () => {
-    const res = await API.get("/tasks");
+  const fetchTasks=async()=>{
+    const res=await API.get("/tasks");
     setTasks(res.data);
   };
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  useEffect(()=>{ fetchTasks(); },[]);
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{padding:20}}>
       <h1>Task Manager</h1>
 
-      {tasks.map(task => (
-        <div key={task._id} style={{
-          border:"1px solid #ccc",
-          padding:"10px",
-          margin:"10px 0"
-        }}>
+      <button onClick={()=>setShowModal(true)}>
+        + Add Task
+      </button>
+
+      {showModal && (
+        <AddTaskModal
+          onClose={()=>setShowModal(false)}
+          refresh={fetchTasks}
+        />
+      )}
+
+      {tasks.map(task=>(
+        <div key={task._id}
+          style={{border:"1px solid #ccc",padding:10,margin:10}}>
           <h3>{task.title}</h3>
           <p>{task.description}</p>
           <p>Status: {task.status}</p>
