@@ -1,78 +1,108 @@
-
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
-
 import { useEffect, useState } from "react";
 import API from "./services/api";
 import AddTaskModal from "./components/AddTaskModal";
 
 function App() {
-  const [tasks,setTasks]=useState([]);
-  const [showModal,setShowModal]=useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [showModal, setShowModal] = useState(false);
 
-  const fetchTasks=async()=>{
-    const res=await API.get("/tasks");
-    setTasks(res.data);
+  // Fetch tasks
+  const fetchTasks = async () => {
+    try {
+      const res = await API.get("/tasks");
+      setTasks(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  useEffect(()=>{ fetchTasks(); },[]);
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  // Delete task
+  const deleteTask = async (id) => {
+    await API.delete(`/tasks/${id}`);
+    fetchTasks();
+  };
+
+  // Toggle status
+  const toggleStatus = async (task) => {
+    await API.put(`/tasks/${task._id}`, {
+      status: task.status === "pending" ? "completed" : "pending",
+    });
+    fetchTasks();
+  };
 
   return (
-    <div style={{padding:20}}>
-      <h1>Task Manager</h1>
+    <div
+      style={{
+        maxWidth: 600,
+        margin: "40px auto",
+        fontFamily: "Arial",
+      }}
+    >
+      <h1 style={{ textAlign: "center" }}>Task Manager</h1>
 
-      <button onClick={()=>setShowModal(true)}>
+      <button
+        onClick={() => setShowModal(true)}
+        style={{
+          padding: "10px 15px",
+          marginBottom: 20,
+          cursor: "pointer",
+        }}
+      >
         + Add Task
       </button>
 
       {showModal && (
         <AddTaskModal
-          onClose={()=>setShowModal(false)}
+          onClose={() => setShowModal(false)}
           refresh={fetchTasks}
         />
       )}
 
-      {tasks.map(task=>(
-        <div key={task._id}
-          style={{border:"1px solid #ccc",padding:10,margin:10}}>
+      {tasks.map((task) => (
+        <div
+          key={task._id}
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: 10,
+            padding: 15,
+            marginBottom: 15,
+            background: "#fafafa",
+          }}
+        >
           <h3>{task.title}</h3>
           <p>{task.description}</p>
-          <p>Status: {task.status}</p>
+
+          <p>
+            Status:
+            <span
+              style={{
+                color:
+                  task.status === "completed" ? "green" : "orange",
+                fontWeight: "bold",
+              }}
+            >
+              {" " + task.status}
+            </span>
+          </p>
+
+          <button onClick={() => toggleStatus(task)}>
+            Toggle Status
+          </button>
+
+          <button
+            onClick={() => deleteTask(task._id)}
+            style={{ marginLeft: 10, color: "red" }}
+          >
+            Delete
+          </button>
         </div>
       ))}
     </div>
   );
 }
 
-export default App
+export default App;
